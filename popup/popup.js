@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const companyInput = document.getElementById('companyName');
   const jobTitleInput = document.getElementById('jobTitle');
   const jobDescInput = document.getElementById('jobDescription');
-  const extractBtn = document.getElementById('extractBtn');
   const generateBtn = document.getElementById('generateBtn');
   const loading = document.getElementById('loading');
   const resultsSection = document.getElementById('resultsSection');
@@ -95,20 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkATSScore(savedData.draftResults);
   }
 
-  // Check for job info from content script
-  const { currentJobInfo } = await chrome.storage.local.get('currentJobInfo');
-  if (currentJobInfo) {
-    companyInput.value = currentJobInfo.companyName || '';
-    jobTitleInput.value = currentJobInfo.jobTitle || '';
-    jobDescInput.value = currentJobInfo.jobDescription || '';
-    chrome.storage.local.remove('currentJobInfo');
-    saveFormData();
-
-    if (currentJobInfo.jobDescription) {
-      updateMatchScore(currentJobInfo.jobDescription);
-    }
-  }
-
   // Auto-save on input changes (debounced)
   let saveTimeout;
   const autoSave = () => {
@@ -154,35 +139,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   settingsBtn.addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
-  });
-
-  // Extract from LinkedIn
-  extractBtn.addEventListener('click', async () => {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-      if (!tab.url?.includes('linkedin.com/jobs')) {
-        showError('Please navigate to a LinkedIn job posting first');
-        return;
-      }
-
-      const response = await chrome.tabs.sendMessage(tab.id, { action: 'getJobInfo' });
-
-      if (response) {
-        companyInput.value = response.companyName || '';
-        jobTitleInput.value = response.jobTitle || '';
-        jobDescInput.value = response.jobDescription || '';
-        saveFormData();
-
-        if (response.jobDescription) {
-          updateMatchScore(response.jobDescription);
-        } else {
-          showError('Could not extract job description. Try scrolling down on the job page first.');
-        }
-      }
-    } catch (error) {
-      showError('Could not extract job info. Make sure you\'re on a LinkedIn job page and refresh if needed.');
-    }
   });
 
   // Refresh match score
