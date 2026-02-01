@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Resume Tailor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "AI-powered resume customization for job applications using Claude",
   "permissions": [
     "storage"
