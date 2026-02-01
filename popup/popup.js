@@ -1,4 +1,6 @@
 // Popup script with auto-save, match score, and ATS checking
+// FREE features: Match Score, ATS Checker, Auto-save
+// API Required: AI Resume Generation
 
 // Skills from the base resume
 const RESUME_SKILLS = [
@@ -32,8 +34,6 @@ const COMMON_SKILLS = [
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Elements
-  const apiKeyWarning = document.getElementById('apiKeyWarning');
-  const openSettings = document.getElementById('openSettings');
   const settingsBtn = document.getElementById('settingsBtn');
   const clearBtn = document.getElementById('clearBtn');
   const savedIndicator = document.getElementById('savedIndicator');
@@ -58,15 +58,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   const refreshMatchBtn = document.getElementById('refreshMatch');
 
   // ATS elements
-  const atsBadge = document.getElementById('atsBadge');
   const atsIcon = document.getElementById('atsIcon');
   const atsStatus = document.getElementById('atsStatus');
   const atsScore = document.getElementById('atsScore');
 
-  // Check for API key
+  // API status elements
+  const apiKeyStatus = document.getElementById('apiKeyStatus');
+  const apiStatusIcon = document.getElementById('apiStatusIcon');
+  const apiStatusLabel = document.getElementById('apiStatusLabel');
+  const openSettings = document.getElementById('openSettings');
+
+  // Check for API key and update status
+  let hasApiKey = false;
   const { anthropicApiKey } = await chrome.storage.sync.get('anthropicApiKey');
-  if (!anthropicApiKey) {
-    apiKeyWarning.classList.remove('hidden');
+
+  if (anthropicApiKey) {
+    hasApiKey = true;
+    apiKeyStatus.classList.add('configured');
+    apiStatusIcon.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>`;
+    apiStatusLabel.textContent = 'API key configured';
+    openSettings.textContent = 'Change settings';
+    generateBtn.disabled = false;
+  } else {
+    generateBtn.disabled = true;
   }
 
   // Load saved form data
@@ -146,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateMatchScore(jobDescInput.value);
   });
 
-  // Match score calculation
+  // Match score calculation (FREE)
   function updateMatchScore(jobDescription) {
     if (!jobDescription || jobDescription.length < 50) {
       matchSection.classList.add('hidden');
@@ -221,13 +238,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       : '<span class="skill-tag">All key skills covered!</span>';
   }
 
-  // ATS Score checking
+  // ATS Score checking (FREE)
   function checkATSScore(resumeText) {
     let score = 100;
     const issues = [];
 
     // Check for ATS-friendly characteristics
-    // 1. Has standard sections
     const hasEducation = /education/i.test(resumeText);
     const hasExperience = /experience|work/i.test(resumeText);
     const hasSkills = /skills/i.test(resumeText);
@@ -236,23 +252,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!hasExperience) { score -= 15; issues.push('Missing Experience section'); }
     if (!hasSkills) { score -= 10; issues.push('Missing Skills section'); }
 
-    // 2. Check for contact info
     const hasEmail = /@/.test(resumeText);
     const hasPhone = /\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/.test(resumeText);
 
     if (!hasEmail) { score -= 10; issues.push('Missing email'); }
     if (!hasPhone) { score -= 5; issues.push('Missing phone number'); }
 
-    // 3. Check length (should be reasonable)
     const wordCount = resumeText.split(/\s+/).length;
     if (wordCount < 150) { score -= 15; issues.push('Too short'); }
     if (wordCount > 1000) { score -= 10; issues.push('May be too long'); }
 
-    // 4. Check for bullet points (good for ATS)
     const hasBullets = /[•\-\*]/.test(resumeText);
     if (hasBullets) { score = Math.min(100, score + 5); }
 
-    // 5. No special characters that might confuse ATS
     const hasWeirdChars = /[^\w\s\-\.\,\:\;\(\)\@\|\•\/\&\'\"\!\?]/.test(resumeText);
     if (hasWeirdChars) { score -= 5; issues.push('Contains special characters'); }
 
@@ -288,26 +300,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Generate tailored resume
+  // Generate tailored resume (Requires API Key)
   generateBtn.addEventListener('click', async () => {
     const company = companyInput.value.trim();
     const title = jobTitleInput.value.trim();
     const description = jobDescInput.value.trim();
 
-    // Validate
     if (!description) {
       showError('Please enter a job description');
       return;
     }
 
-    // Check API key again
+    // Re-check API key
     const { anthropicApiKey } = await chrome.storage.sync.get('anthropicApiKey');
     if (!anthropicApiKey) {
-      showError('Please set your Anthropic API key in settings');
+      showError('Please add your Anthropic API key in settings to use AI generation');
       return;
     }
 
-    // Show loading
     hideError();
     generateBtn.disabled = true;
     loading.classList.remove('hidden');
@@ -324,11 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (response.success) {
         resumeOutput.textContent = response.data;
         resultsSection.classList.remove('hidden');
-
-        // Save results
         chrome.storage.local.set({ draftResults: response.data });
-
-        // Check ATS score
         checkATSScore(response.data);
       } else {
         showError(response.error || 'Failed to generate resume');
@@ -364,7 +370,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     URL.revokeObjectURL(url);
   });
 
-  // Helper functions
   function showError(message) {
     errorMessage.textContent = message;
     errorMessage.classList.remove('hidden');

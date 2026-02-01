@@ -575,3 +575,130 @@ body {
   background: var(--success);
   color: white;
 }
+
+/* FREE Badge */
+.free-badge {
+  display: inline-block;
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.free-badge.small {
+  font-size: 9px;
+  padding: 1px 4px;
+}
+
+/* API Badge */
+.api-badge {
+  display: inline-block;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+/* AI Section */
+.ai-section {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.ai-header {
+  margin-bottom: 12px;
+}
+
+.ai-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+  flex-wrap: wrap;
+}
+
+.ai-header h3 svg {
+  color: var(--primary);
+}
+
+.ai-note {
+  font-size: 11px;
+  color: var(--gray-500);
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* API Status */
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.api-status.configured {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.api-status-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fbbf24;
+  color: white;
+}
+
+.api-status.configured .api-status-icon {
+  background: var(--success);
+}
+
+.api-status-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.api-status-text span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.api-status.configured .api-status-text span {
+  color: #065f46;
+}
+
+.api-status-text a {
+  font-size: 11px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.api-status-text a:hover {
+  text-decoration: underline;
+}
+
+.api-status.configured .api-status-text a {
+  color: #065f46;
+}
